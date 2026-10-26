@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgis/postgis:17-3.6
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-gojek_api}
+      POSTGRES_USER: ${POSTGRES_USER:-gojek}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gojek_dev_only}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gojek} -d ${POSTGRES_DB:-gojek_api}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  postgres_data:

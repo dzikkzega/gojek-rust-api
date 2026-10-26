@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1840" height="1080" viewBox="0 0 1840 1080" role="img" aria-labelledby="title desc">
+<title id="title">GOJEK Rust API — database ERD</title>
+<desc id="desc">Entity relationship diagram for the ride-hailing MVP PostgreSQL and PostGIS schema. Includes users, driver onboarding, fares, quotes, trips, events, payments, ratings and audit.</desc>
+<defs>
+<style>
+text{font-family:Inter,Segoe UI,Arial,sans-serif;fill:#183044}.title{font-size:28px;font-weight:700}.sub{font-size:14px;fill:#526574}.group{font-size:14px;font-weight:700;letter-spacing:.5px}.box{fill:#fff;stroke:#7890a0;stroke-width:1.4;rx:9}.hd1{fill:#dceef4}.hd2{fill:#e7e4f7}.hd3{fill:#e2f1e7}.hd4{fill:#fff0d8}.hd5{fill:#f5e5e9}.name{font-size:14px;font-weight:700}.f{font-size:11px}.pk{font-size:11px;font-weight:700;fill:#145c79}.fk{font-size:11px;font-weight:600;fill:#8a4b08}.hint{font-size:10px;fill:#526574}.edge{stroke:#526b7a;stroke-width:1.5;fill:none}.lab{font-size:10px;fill:#405868;paint-order:stroke;stroke:#f7f9fb;stroke-width:4px;stroke-linejoin:round}.legend{font-size:11px;fill:#334b5b}
+</style>
+<marker id="one" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="#526b7a" stroke-width="1.4"/></marker>
+<marker id="many" markerWidth="12" markerHeight="12" refX="6" refY="6" orient="auto"><path d="M1 1L6 6L1 11M6 6L11 1M6 6L11 11" fill="none" stroke="#526b7a" stroke-width="1.4"/></marker>
+<marker id="opt" markerWidth="12" markerHeight="12" refX="6" refY="6" orient="auto"><circle cx="3" cy="6" r="2.2" fill="#fff" stroke="#526b7a" stroke-width="1.3"/><path d="M7 1L11 6L7 11" fill="none" stroke="#526b7a" stroke-width="1.3"/></marker>
+</defs>
+<rect width="1840" height="1080" fill="#f7f9fb"/>
+<text class="title" x="36" y="42">Database ERD — Ride-hailing MVP</text>
+<text class="sub" x="36" y="66">PostgreSQL + PostGIS · relational keys follow migrations/20261025000200_initial_schema.sql · driver live locations stay in Redis</text>
+
+<!-- domain panels -->
+<rect x="24" y="92" width="590" height="900" rx="14" fill="#eff7fa" stroke="#c8dfe8"/><text class="group" x="42" y="117">ACCOUNT &amp; DRIVER ONBOARDING</text>
+<rect x="630" y="92" width="520" height="900" rx="14" fill="#f0f7f1" stroke="#cfe3d1"/><text class="group" x="648" y="117">SERVICE, FARE &amp; QUOTE</text>
+<rect x="1166" y="92" width="300" height="900" rx="14" fill="#fff8eb" stroke="#ecdcb9"/><text class="group" x="1184" y="117">TRIP LIFECYCLE</text>
+<rect x="1482" y="92" width="334" height="900" rx="14" fill="#f8f1f3" stroke="#e6cfd6"/><text class="group" x="1500" y="117">TRIP RECORDS</text>
+
+<!-- connectors: relationship lines behind cards -->
+<g class="edge">
+ <path d="M260 190H320" marker-start="url(#one)" marker-end="url(#many)"/>
+ <path d="M260 260H285V390H320" marker-start="url(#one)" marker-end="url(#zeroone)"/>
+ <path d="M435 450V500" marker-start="url(#one)" marker-end="url(#many)"/>
+ <path d="M550 380H590V380H650" marker-start="url(#one)" marker-end="url(#many)"/>
+ <path d="M435 450V590H320" marker-start="url(#one)" marker-end="url(#many)"/>
+ <path d="M765 440V500" marker-start="url(#one)" marker-end="url(#many)"/>
+ <path d="M260 300H285V470H620V375H650" marker-start="url(#one)" marker-end="url(#one)"/>
+ <path d="M260 160V135H620V220H650" marker-start="url(#one)" marker-end="url(#many)"/>
+ <path d="M260 305H610V700H650" marker-start="url(#one)" marker-end="url(#many)"/>
+ <path d="M890 310V360" marker-start="url(#one)" marker-end="url(#many)"/>
+ <path d="M900 310V620" marker-start="url(#one)" marker-end="url(#many)"/>
+ <path d="M890 500V620" marker-start="url(#one)" marker-end="url(#many)"/>
+ <path d="M900 220H950V580H650" marker-start="url(#one)" marker-end="url(#many)"/>
+ <path d="M920 700H1160V610H1200" marker-start="url(#one)" marker-end="url(#opt)"/>
+ <path d="M260 175H1140V530H1200" marker-start="url(#one)" marker-end="url(#many)"/>
+ <path d="M550 380H1135V570H1200" marker-start="url(#opt)" marker-end="url(#many)"/>
+ <path d="M550 570H1128V650H1200" marker-start="url(#opt)" marker-end="url(#many)"/>
+ <path d="M1460 555H1490V215H1510" marker-start="url(#one)" marker-end="url(#many)"/>
+ <path d="M1460 610H1510" marker-start="url(#one)" marker-end="url(#opt)"/>
+ <path d="M1460 670H1490V800H1510" marker-start="url(#one)" marker-end="url(#many)"/>
+</g>
+<g>
+ <text class="lab" x="270" y="181">user_id</text><text class="lab" x="268" y="332">user_id</text>
+ <text class="lab" x="442" y="480">application_id</text><text class="lab" x="570" y="370">driver_id</text>
+ <text class="lab" x="326" y="478">application_id</text><text class="lab" x="774" y="475">service_area_id</text>
+ <text class="lab" x="450" y="463">same user</text><text class="lab" x="455" y="128">rider_id</text>
+ <text class="lab" x="445" y="690">rider_id</text><text class="lab" x="908" y="348">fare rule composite FK</text>
+ <text class="lab" x="907" y="605">fare rule composite FK</text><text class="lab" x="925" y="558">quote snapshot FK</text>
+ <text class="lab" x="972" y="571">quote_id unique</text><text class="lab" x="650" y="368">applicant user</text>
+ <text class="lab" x="920" y="545">rider_id</text><text class="lab" x="930" y="642">driver + vehicle</text>
+ <text class="lab" x="1470" y="375">trip_id</text><text class="lab" x="1470" y="600">trip_id unique</text>
+ <text class="lab" x="1470" y="735">trip + participants</text>
+</g>
+
+<!-- entity cards -->
+<g>
+ <g transform="translate(40 140)"><rect class="box" width="220" height="190"/><path class="hd1" d="M9 0H211Q220 0 220 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">users</text><text class="pk" x="12" y="51">PK id uuid</text><text class="f" x="12" y="70">UQ phone_e164 · email</text><text class="f" x="12" y="89">role · status</text><text class="f" x="12" y="108">display_name</text><text class="f" x="12" y="127">created_at · updated_at</text><text class="f" x="12" y="146">deleted_at</text><text class="hint" x="12" y="174">one role per account in MVP</text></g>
+ <g transform="translate(320 140)"><rect class="box" width="230" height="110"/><path class="hd1" d="M9 0H221Q230 0 230 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">auth_sessions</text><text class="pk" x="12" y="51">PK id</text><text class="fk" x="12" y="70">FK user_id → users</text><text class="f" x="12" y="89">UQ refresh_token_hash · expires_at</text></g>
+ <g transform="translate(320 320)"><rect class="box" width="230" height="130"/><path class="hd1" d="M9 0H221Q230 0 230 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">driver_applications</text><text class="pk" x="12" y="51">PK id</text><text class="fk" x="12" y="70">FK/UQ user_id → users</text><text class="fk" x="12" y="89">FK reviewed_by → users</text><text class="f" x="12" y="108">status · submitted/reviewed_at</text></g>
+ <g transform="translate(320 500)"><rect class="box" width="230" height="140"/><path class="hd2" d="M9 0H221Q230 0 230 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">driver_documents</text><text class="pk" x="12" y="51">PK id</text><text class="fk" x="12" y="70">FK application_id</text><text class="fk" x="12" y="89">FK reviewed_by → users</text><text class="f" x="12" y="108">storage_key · status</text><text class="f" x="12" y="127">reviewed_at</text></g>
+ <g transform="translate(650 320)"><rect class="box" width="230" height="120"/><path class="hd2" d="M9 0H221Q230 0 230 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">driver_profiles</text><text class="pk" x="12" y="51">PK/FK user_id → users</text><text class="fk" x="12" y="70">UQ FK application_id + user_id</text><text class="f" x="12" y="89">status · approved_at</text></g>
+ <g transform="translate(650 500)"><rect class="box" width="230" height="140"/><path class="hd2" d="M9 0H221Q230 0 230 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">vehicles</text><text class="pk" x="12" y="51">PK id</text><text class="fk" x="12" y="70">FK driver_id → driver_profiles</text><text class="f" x="12" y="89">vehicle_type · UQ registration</text><text class="f" x="12" y="108">make · model · color</text><text class="f" x="12" y="127">is_active</text></g>
+ <g transform="translate(650 620)"><rect class="box" width="270" height="160"/><path class="hd3" d="M9 0H261Q270 0 270 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">service_areas</text><text class="pk" x="12" y="51">PK id</text><text class="f" x="12" y="70">name · is_active</text><text class="f" x="12" y="89">boundary geography(MultiPolygon)</text><text class="f" x="12" y="108">GiST index · PostGIS</text><text class="hint" x="12" y="138">covers fare rules, quotes, trips</text></g>
+ <g transform="translate(650 360)"><rect class="box" width="270" height="140"/><path class="hd3" d="M9 0H261Q270 0 270 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">fare_rules</text><text class="pk" x="12" y="51">PK id</text><text class="fk" x="12" y="70">FK service_area_id · created_by</text><text class="f" x="12" y="89">vehicle_type · currency</text><text class="f" x="12" y="108">fare amounts · effective range</text></g>
+ <g transform="translate(650 840)"><rect class="box" width="270" height="170"/><path class="hd3" d="M9 0H261Q270 0 270 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">ride_quotes</text><text class="pk" x="12" y="51">PK id</text><text class="fk" x="12" y="70">FK rider_id · service_area_id</text><text class="fk" x="12" y="89">FK fare_rule + type + currency</text><text class="f" x="12" y="108">pickup · destination</text><text class="f" x="12" y="127">distance · duration · estimated fare</text><text class="f" x="12" y="146">status · expires_at</text></g>
+ <g transform="translate(1200 490)"><rect class="box" width="260" height="300"/><path class="hd4" d="M9 0H251Q260 0 260 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">trips</text><text class="pk" x="12" y="51">PK id</text><text class="fk" x="12" y="70">FK rider_id → users</text><text class="fk" x="12" y="89">FK driver_id · vehicle_id optional</text><text class="fk" x="12" y="108">FK quote_id UNIQUE → ride_quotes</text><text class="fk" x="12" y="127">FK area + fare_rule + type + currency</text><text class="f" x="12" y="146">pickup · destination · status</text><text class="f" x="12" y="165">estimated/final fare · currency</text><text class="f" x="12" y="184">idempotency_key UNIQUE per rider</text><text class="f" x="12" y="203">requested/assigned/arrived/started</text><text class="f" x="12" y="222">completed/cancelled timestamps</text><text class="hint" x="12" y="265">composite FKs protect ownership/snapshot</text></g>
+ <g transform="translate(1510 140)"><rect class="box" width="280" height="120"/><path class="hd5" d="M9 0H271Q280 0 280 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">trip_events</text><text class="pk" x="12" y="51">PK id</text><text class="fk" x="12" y="70">FK trip_id · optional actor_user_id</text><text class="f" x="12" y="89">from_status · to_status · details</text><text class="f" x="12" y="108">created_at</text></g>
+ <g transform="translate(1510 450)"><rect class="box" width="280" height="120"/><path class="hd5" d="M9 0H271Q280 0 280 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">payments</text><text class="pk" x="12" y="51">PK id</text><text class="fk" x="12" y="70">FK/UQ trip_id → trips</text><text class="f" x="12" y="89">cash · status · amount_minor</text><text class="f" x="12" y="108">currency · paid_at</text></g>
+ <g transform="translate(1510 730)"><rect class="box" width="280" height="145"/><path class="hd5" d="M9 0H271Q280 0 280 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">ratings</text><text class="pk" x="12" y="51">PK id</text><text class="fk" x="12" y="70">FK (trip_id, rider_id, driver_id)</text><text class="f" x="12" y="89">direction · score · comment</text><text class="f" x="12" y="108">UNIQUE (trip_id, direction)</text><text class="hint" x="12" y="130">one rating per direction per trip</text></g>
+ <g transform="translate(1510 930)"><rect class="box" width="280" height="100"/><path class="hd5" d="M9 0H271Q280 0 280 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">audit_logs</text><text class="pk" x="12" y="51">PK id</text><text class="fk" x="12" y="70">FK actor_user_id optional</text><text class="f" x="12" y="89">action · target · created_at</text></g>
+</g>
+
+<!-- legend -->
+<rect x="40" y="1035" width="14" height="14" rx="3" fill="#dceef4" stroke="#7890a0"/><text class="legend" x="61" y="1047">Account</text>
+<rect x="140" y="1035" width="14" height="14" rx="3" fill="#e7e4f7" stroke="#7890a0"/><text class="legend" x="161" y="1047">Driver</text>
+<rect x="240" y="1035" width="14" height="14" rx="3" fill="#e2f1e7" stroke="#7890a0"/><text class="legend" x="261" y="1047">Pricing</text>
+<rect x="340" y="1035" width="14" height="14" rx="3" fill="#fff0d8" stroke="#7890a0"/><text class="legend" x="361" y="1047">Trip</text>
+<rect x="410" y="1035" width="14" height="14" rx="3" fill="#f5e5e9" stroke="#7890a0"/><text class="legend" x="431" y="1047">Records</text>
+<path d="M520 1042H575" class="edge" marker-start="url(#one)" marker-end="url(#many)"/><text class="legend" x="585" y="1047">one-to-many</text>
+<path d="M690 1042H745" class="edge" marker-start="url(#opt)" marker-end="url(#many)"/><text class="legend" x="755" y="1047">optional relation</text>
+<text class="hint" x="40" y="1070">PK primary key · FK foreign key · UQ unique · Money uses minor units · Diagram shows relationships, not stored data</text>
+</svg>
