@@ -8,7 +8,7 @@ This is a decision register, not a source of invented defaults. `Open` means pro
 | D-02 | Currency, fare display and minor-unit convention | US 05, US 08 | Open | ISO currency, rounding and display rules |
 | D-03 | Fare formula, route source, quote expiry and final-fare calculation | US 05, US 07, US 08 | Open | Versioned formula, route provider, final-amount authority |
 | D-04 | Cancellation eligibility, reason codes, timing and fee policy | US 06, US 07 | Open | Actor/state matrix and fee handling; no fee before approval |
-| D-05 | OTP provider/channel, TTL, resend, retry and attempt limits | US 01 | Open | Provider, region support, abuse controls, owner and cost limits |
+| D-05 | OTP provider/channel, TTL, resend, retry and attempt limits | US 01 | Open (blocking real sign-in) | Provider, region support, abuse controls, owner and cost limits. Current API deliberately returns 503 for OTP delivery until configured. |
 | D-06 | Access/refresh token format, TTL, rotation and revocation | US 01 | Open | Token claims/storage, expiry, replay response and session limits |
 | D-07 | Driver eligibility, identity/document types, age requirements and retention | US 03, US 10 | Open | Jurisdictional checklist, reviewer process, retention/deletion |
 | D-08 | Private document storage, upload allowlist/size and content inspection | US 03 | Open | Storage provider, access, file policy, malware/content checks |

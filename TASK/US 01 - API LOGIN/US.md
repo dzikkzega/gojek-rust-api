@@ -1,7 +1,7 @@
 # US 01 — API LOGIN
 
 **Project:** GOJEK-rust-api  
-**Status:** Todo  
+**Status:** In Progress  
 **Priority:** P0 — MVP
 
 ## User Story
@@ -10,14 +10,16 @@ Sebagai pengguna, saya ingin login dengan nomor telepon terverifikasi, agar meng
 
 ## API scope
 
-- `POST /api/v1/auth/otp/request`
-- `POST /api/v1/auth/otp/verify`
-- `POST /api/v1/auth/token/refresh`
-- `POST /api/v1/auth/logout`
+- `POST /api/v1/auth/otp/request` (handler: `src/auth.rs`)
+- `POST /api/v1/auth/otp/verify` (handler: `src/auth.rs`)
+- `POST /api/v1/auth/token/refresh` (handler: `src/auth.rs`)
+- `POST /api/v1/auth/logout` (handler: `src/auth.rs`)
 
 ## Dependencies / keputusan
 
-Provider OTP belum dipilih; tentukan sebelum integrasi.
+- Migrasi `auth_otp_challenges` telah diterapkan ke PostgreSQL lokal.
+- Provider OTP SMS/WhatsApp produksi belum dipilih (D-05 Open). `DEV_STATIC_OTP` hanya tersedia untuk pengujian lokal.
+- Access token memakai JWT HMAC-SHA256 (15 menit); refresh token acak disimpan sebagai hash SHA-256 dalam `auth_sessions`.
 
 ## Acceptance Criteria cards
 

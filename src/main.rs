@@ -14,10 +14,13 @@ use tokio::net::TcpListener;
 use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
 
+mod auth;
+
 #[derive(Clone)]
-struct AppState {
-    db: Option<PgPool>,
-    redis: Option<ConnectionManager>,
+pub struct AppState {
+    pub db: Option<PgPool>,
+    pub redis: Option<ConnectionManager>,
+    pub jwt_secret: String,
 }
 
 #[derive(Serialize)]
@@ -51,6 +54,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         .route("/api/v1/health", get(health))
         .route("/api/v1/ready", get(ready))
+        .merge(auth::routes())
         .with_state(state);
 
     let address: SocketAddr = env::var("BIND_ADDR")
@@ -97,7 +101,13 @@ async fn connect_dependencies() -> Result<AppState, Box<dyn std::error::Error>> 
         Err(error) => return Err(error.into()),
     };
 
-    Ok(AppState { db, redis })
+    let jwt_secret = env::var("JWT_SECRET")
+        .map_err(|_| "JWT_SECRET must be configured")?;
+    if jwt_secret.len() < 32 {
+        return Err("JWT_SECRET must contain at least 32 bytes".into());
+    }
+
+    Ok(AppState { db, redis, jwt_secret })
 }
 
 async fn health() -> Json<HealthResponse> {
@@ -110,9 +120,18 @@ async fn ready(State(state): State<AppState>) -> Response {
         Some(_) => "unavailable",
         None => "not_configured",
     };
-    let redis = match &state.redis {
-        Some(mut connection) if redis::cmd("PING").query_async::<String>(&mut connection).await.is_ok() => "ok",
-        Some(_) => "unavailable",
+    let redis = match state.redis.clone() {
+        Some(mut connection) => {
+            if redis::cmd("PING")
+                .query_async::<String>(&mut connection)
+                .await
+                .is_ok()
+            {
+                "ok"
+            } else {
+                "unavailable"
+            }
+        }
         None => "not_configured",
     };
 
@@ -153,6 +172,7 @@ mod tests {
         let response = ready(State(AppState {
             db: None,
             redis: None,
+            jwt_secret: "x".repeat(32),
         }))
         .await;
 
