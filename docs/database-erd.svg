@@ -11,7 +11,7 @@ text{font-family:Inter,Segoe UI,Arial,sans-serif;fill:#183044}.title{font-size:2
 </defs>
 <rect width="1840" height="1080" fill="#f7f9fb"/>
 <text class="title" x="36" y="42">Database ERD — Ride-hailing MVP</text>
-<text class="sub" x="36" y="66">PostgreSQL + PostGIS · relational keys follow migrations/20261025000200_initial_schema.sql · driver live locations stay in Redis</text>
+<text class="sub" x="36" y="66">PostgreSQL + PostGIS · keys follow migrations through 20261028000100_email_otp.sql · live driver locations stay in Redis</text>
 
 <!-- domain panels -->
 <rect x="24" y="92" width="590" height="900" rx="14" fill="#eff7fa" stroke="#c8dfe8"/><text class="group" x="42" y="117">ACCOUNT &amp; DRIVER ONBOARDING</text>
@@ -35,6 +35,7 @@ text{font-family:Inter,Segoe UI,Arial,sans-serif;fill:#183044}.title{font-size:2
  <path d="M890 500V620" marker-start="url(#one)" marker-end="url(#many)"/>
  <path d="M900 220H950V580H650" marker-start="url(#one)" marker-end="url(#many)"/>
  <path d="M920 700H1160V610H1200" marker-start="url(#one)" marker-end="url(#opt)"/>
+ <path d="M260 175H300V750H320" marker-start="url(#one)" marker-end="url(#many)"/>
  <path d="M260 175H1140V530H1200" marker-start="url(#one)" marker-end="url(#many)"/>
  <path d="M550 380H1135V570H1200" marker-start="url(#opt)" marker-end="url(#many)"/>
  <path d="M550 570H1128V650H1200" marker-start="url(#opt)" marker-end="url(#many)"/>
@@ -43,7 +44,7 @@ text{font-family:Inter,Segoe UI,Arial,sans-serif;fill:#183044}.title{font-size:2
  <path d="M1460 670H1490V800H1510" marker-start="url(#one)" marker-end="url(#many)"/>
 </g>
 <g>
- <text class="lab" x="270" y="181">user_id</text><text class="lab" x="268" y="332">user_id</text>
+ <text class="lab" x="270" y="181">user_id</text><text class="lab" x="268" y="332">user_id</text><text class="lab" x="265" y="742">email_normalized (pre-account)</text>
  <text class="lab" x="442" y="480">application_id</text><text class="lab" x="570" y="370">driver_id</text>
  <text class="lab" x="326" y="478">application_id</text><text class="lab" x="774" y="475">service_area_id</text>
  <text class="lab" x="450" y="463">same user</text><text class="lab" x="455" y="128">rider_id</text>
@@ -57,7 +58,8 @@ text{font-family:Inter,Segoe UI,Arial,sans-serif;fill:#183044}.title{font-size:2
 
 <!-- entity cards -->
 <g>
- <g transform="translate(40 140)"><rect class="box" width="220" height="190"/><path class="hd1" d="M9 0H211Q220 0 220 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">users</text><text class="pk" x="12" y="51">PK id uuid</text><text class="f" x="12" y="70">UQ phone_e164 · email</text><text class="f" x="12" y="89">role · status</text><text class="f" x="12" y="108">display_name</text><text class="f" x="12" y="127">created_at · updated_at</text><text class="f" x="12" y="146">deleted_at</text><text class="hint" x="12" y="174">one role per account in MVP</text></g>
+ <g transform="translate(40 140)"><rect class="box" width="220" height="190"/><path class="hd1" d="M9 0H211Q220 0 220 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">users</text><text class="pk" x="12" y="51">PK id uuid</text><text class="f" x="12" y="70">UQ email_normalized · email</text><text class="f" x="12" y="89">email_verified_at · optional phone</text><text class="f" x="12" y="108">role · status · display_name</text><text class="f" x="12" y="127">created_at · updated_at</text><text class="f" x="12" y="146">deleted_at</text><text class="hint" x="12" y="174">email OTP identity; one role in MVP</text></g>
+ <g transform="translate(320 690)"><rect class="box" width="230" height="125"/><path class="hd1" d="M9 0H221Q230 0 230 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">auth_otp_challenges</text><text class="pk" x="12" y="51">PK id</text><text class="f" x="12" y="70">UQ active email_normalized</text><text class="f" x="12" y="89">code_hash · attempt_count/max</text><text class="f" x="12" y="108">status · expires_at · resend_after</text></g>
  <g transform="translate(320 140)"><rect class="box" width="230" height="110"/><path class="hd1" d="M9 0H221Q230 0 230 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">auth_sessions</text><text class="pk" x="12" y="51">PK id</text><text class="fk" x="12" y="70">FK user_id → users</text><text class="f" x="12" y="89">UQ refresh_token_hash · expires_at</text></g>
  <g transform="translate(320 320)"><rect class="box" width="230" height="130"/><path class="hd1" d="M9 0H221Q230 0 230 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">driver_applications</text><text class="pk" x="12" y="51">PK id</text><text class="fk" x="12" y="70">FK/UQ user_id → users</text><text class="fk" x="12" y="89">FK reviewed_by → users</text><text class="f" x="12" y="108">status · submitted/reviewed_at</text></g>
  <g transform="translate(320 500)"><rect class="box" width="230" height="140"/><path class="hd2" d="M9 0H221Q230 0 230 9V31H0V9Q0 0 9 0Z"/><text class="name" x="12" y="21">driver_documents</text><text class="pk" x="12" y="51">PK id</text><text class="fk" x="12" y="70">FK application_id</text><text class="fk" x="12" y="89">FK reviewed_by → users</text><text class="f" x="12" y="108">storage_key · status</text><text class="f" x="12" y="127">reviewed_at</text></g>

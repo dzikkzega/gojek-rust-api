@@ -7,16 +7,23 @@ This page prevents draft specifications from being mistaken for live API behavio
 | Surface | Current behavior | Source |
 |---|---|---|
 | `GET /api/v1/health` | Liveness response; no dependency check | `src/main.rs` |
-| `GET /api/v1/ready` | Checks configured PostgreSQL and Redis; missing/unavailable dependency returns 503 | `src/main.rs` |
+| `GET /api/v1/ready` | Checks configured PostgreSQL and Redis; missing/unavailable dependency returns 503. Reports SMTP configured/not configured. | `src/main.rs` |
 | PostgreSQL/PostGIS local service | Compose service on loopback port 5433 by default; named volume; healthcheck | `compose.yaml` |
+| Redis local service | Compose service on loopback port 6380 | `compose.yaml` |
+| Mailpit local email sink | SMTP on loopback 1025; inbox UI on loopback 8025; does not deliver to real mailboxes | `compose.yaml` |
 | PostGIS extension | First SQLx migration enables `postgis` | `migrations/20261025000100_enable_postgis.sql` |
+| Email OTP identity migration | Adds normalized email identity; makes legacy phone optional; expires old phone challenges | `migrations/20261028000100_email_otp.sql` |
+| OTP request | Sends 6-digit email through configured SMTP; stores hash and expiry. Does not reveal account existence. | `src/auth.rs` |
+| OTP verify/session | Email-normalized lookup, attempt updates, single-use consume, rider/session creation and JWT response | `src/auth.rs` |
+| Refresh/logout | Refresh rotation with row lock; revoke session | `src/auth.rs` |
 
 ## Designed, not implemented
 
-- All domain API operations in [`api/openapi.yaml`](api/openapi.yaml): auth/OTP, profiles, driver onboarding, quotes, matching, trip lifecycle, cash payment reads, ratings and P0 admin operations.
-- The initial table schema in `migrations/20261025000200_initial_schema.sql` is a reviewed draft migration, not yet applied to the current development database unless `sqlx migrate run` has been run and verified.
-- Redis is not part of the current Compose file; no driver-location/matching behavior is implemented.
-- No OTP, routing/maps, private document storage, push, payment provider, authorization permission matrix, or production policy provider has been selected.
+- Profile, driver onboarding, quotes, matching/offers, trip lifecycle, tracking, cash payment records/read, ratings and P0 admin endpoint handlers in [`api/openapi.yaml`](api/openapi.yaml).
+- `migrations/20261028000100_email_otp.sql` was applied to the local development DB during email-OTP conversion. Verify migration status in each environment before assuming it is applied there.
+- Redis is available in Compose, but live driver location, candidate matching and offers are not yet implemented.
+- OTP email sending works only with a configured SMTP relay. Mailpit is a free local sink; no production SMTP relay/sender domain is selected.
+- Maps/routing, private document storage, push, payment provider, action-level admin permission matrix and production retention/security policies remain undecided or unimplemented.
 
 ## Before treating an operation as available
 

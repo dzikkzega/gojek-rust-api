@@ -6,8 +6,10 @@ Engineering baseline, not legal advice or a complete privacy notice. Jurisdictio
 
 | Data | System of record | Access | Baseline handling | Retention |
 |---|---|---|---|---|
-| Phone/profile | PostgreSQL `users` | Account owner; least-privilege staff | Normalize phone; mask logs; generic auth errors | TBD by jurisdiction |
-| OTP challenge | Short-lived Redis/provider store; not current SQL schema | Auth service | Prefer verifier/hash over plaintext; single-use, expiry, attempt and rate limits; never log | TTL TBD; expire promptly |
+| Email/profile | PostgreSQL `users.email_normalized` / `email_verified_at` | Account owner; least-privilege staff | Trim/lowercase as currently implemented; generic auth errors; avoid logging address | TBD by jurisdiction |
+| Phone/contact | Nullable legacy/contact field `users.phone_e164` | Account owner; least-privilege staff | Not used as the login identity for Email OTP; mask if used | TBD by jurisdiction |
+| OTP challenge | PostgreSQL `auth_otp_challenges` | Auth service only | SHA-256 verifier bound to normalized email; one active challenge, expiry, attempt limit and cooldown; never log code | 5 minutes in current implementation; review with product |
+| OTP email | SMTP relay; local Mailpit for development | Recipient inbox; SMTP credentials in app environment | TLS required for non-local SMTP; generic API response; never log OTP or full recipient | Mailpit is development-only; production relay retention TBD |
 | Refresh token | Hash in PostgreSQL `auth_sessions` | Session service | High entropy, hash at rest, rotate/revoke; never log or return stored value | Session policy TBD |
 | Driver documents | Private object storage; SQL stores metadata/key | Owner and permitted reviewers | Private ACL, allowlisted content/size, inspect files, random storage key; no public bucket | Legal retention/deletion TBD |
 | Live driver location | Redis only | Matching service; authorized active-trip participants | Validate range/time; TTL/freshness and rate limits; redact precision in logs | TTL/post-trip removal TBD |
@@ -18,11 +20,11 @@ Engineering baseline, not legal advice or a complete privacy notice. Jurisdictio
 ## Required controls
 
 - TLS outside local development. Production secrets only in an approved secret manager; never commit production `.env` or credentials.
-- OTP request/verify needs enumeration-resistant responses, per-phone/network abuse controls, expiry, single-use and attempt limits. Numeric thresholds are TBD.
+- OTP request/verify needs enumeration-resistant responses, per-email/network abuse controls, expiry, single-use and attempt limits. Non-local SMTP must require TLS; local development uses Mailpit. Numeric thresholds remain TBD.
 - Check authentication and permission on every resource access. Rider owns own profile/quotes/history; driver may mutate only assigned trips; location is visible only to authorized trip participants.
 - The DB `users.role` enum is not an action-level permission matrix. Define admin/CS permissions before exposing admin routes.
 - Never trust client-provided owner ID, role, state, fare or payment status.
-- Never log auth headers, tokens, OTP, full phone, document content/key, request bodies, precise coordinates or payment secrets. Redact before serialization.
+- Never log auth headers, tokens, OTP, full email/phone, document content/key, request bodies, precise coordinates or payment secrets. Redact before serialization.
 - Audit sensitive staff reads as well as mutations when policy requires.
 
 ## Deletion, backups and incident readiness

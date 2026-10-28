@@ -8,7 +8,7 @@ This is a decision register, not a source of invented defaults. `Open` means pro
 | D-02 | Currency, fare display and minor-unit convention | US 05, US 08 | Open | ISO currency, rounding and display rules |
 | D-03 | Fare formula, route source, quote expiry and final-fare calculation | US 05, US 07, US 08 | Open | Versioned formula, route provider, final-amount authority |
 | D-04 | Cancellation eligibility, reason codes, timing and fee policy | US 06, US 07 | Open | Actor/state matrix and fee handling; no fee before approval |
-| D-05 | OTP provider/channel, TTL, resend, retry and attempt limits | US 01 | Open (blocking real sign-in) | Provider, region support, abuse controls, owner and cost limits. Current API deliberately returns 503 for OTP delivery until configured. |
+| D-05 | Production email SMTP relay, sender/domain verification, delivery regions, OTP TTL/resend/attempt limits | US 01 | Partially resolved (local dev works; production blocked) | Local development uses Mailpit SMTP at `127.0.0.1:1025` with inbox UI at `127.0.0.1:8025` (free/local only). Select a production relay, verify sender/domain, and approve abuse/cost limits before real sign-in. |
 | D-06 | Access/refresh token format, TTL, rotation and revocation | US 01 | Open | Token claims/storage, expiry, replay response and session limits |
 | D-07 | Driver eligibility, identity/document types, age requirements and retention | US 03, US 10 | Open | Jurisdictional checklist, reviewer process, retention/deletion |
 | D-08 | Private document storage, upload allowlist/size and content inspection | US 03 | Open | Storage provider, access, file policy, malware/content checks |
@@ -16,7 +16,7 @@ This is a decision register, not a source of invented defaults. `Open` means pro
 | D-10 | Location freshness, update frequency, Redis TTL and precision | US 04, US 07 | Open | Thresholds, expiry, consent, retention and authorized consumers |
 | D-11 | Trip start-code generation, TTL, attempts and regeneration | US 07 | Open | Secure generation/hash, lifetime and brute-force controls |
 | D-12 | Cash collection confirmation and discrepancy handling | US 08 | Open | Whether `paid` means driver attestation; reconciliation flow |
-| D-13 | Languages, phone normalization and supported phone regions | US 01, US 02 | Open | Locales and numbering support |
+| D-13 | Languages, email normalization, supported email addresses and account email-change verification | US 01, US 02 | Open | Locale support, lowercase normalization policy, unique verified address and re-verification flow |
 | D-14 | Admin/CS permission model and emergency access | US 03, US 10 | Open | Least-privilege matrix, bootstrap and audit requirements |
 | D-15 | Privacy notice, location consent, account deletion and retention | All | Open | Reviewed policy and jurisdictional obligations before real users |
 | D-16 | SLO, peak load, latency, RPO/RTO and backup retention | US 10 / ops | Open | Numeric targets and tested recovery procedure |

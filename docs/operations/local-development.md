@@ -7,7 +7,7 @@ This is a local developer runbook, not a production deployment or backup policy.
 - Docker Desktop engine running.
 - Rust toolchain selected by `rust-toolchain.toml` (stable + rustfmt + clippy); current `Cargo.toml` requires Rust 1.94 or newer.
 - Copy `.env.example` to ignored `.env`; values are local development only.
-- Compose uses `postgis/postgis:17-3.6`, binds PostgreSQL to `127.0.0.1:5433` by default, and stores data in named volume `gojek-rust-api_postgres_data`.
+- Compose uses `postgis/postgis:17-3.6` on `127.0.0.1:5433` with volume `gojek-rust-api_postgres_data`, `redis:7-alpine` on `127.0.0.1:6380`, and `axllent/mailpit:v1.29` on SMTP `127.0.0.1:1025` / web inbox `http://127.0.0.1:8025`.
 
 ## Start and inspect PostgreSQL/PostGIS
 
@@ -15,13 +15,15 @@ From repository root:
 
 ```bash
 docker compose config
-docker compose up -d postgres
+docker compose up -d postgres redis mailpit
 docker compose ps
 docker compose exec -T postgres pg_isready -U gojek -d gojek_api
 docker compose exec -T postgres psql -U gojek -d gojek_api -c "SELECT PostGIS_Version();"
 ```
 
 Wait until Compose reports `healthy`. If port 5433 is occupied, change `POSTGRES_PORT` in `.env` and keep the `DATABASE_URL` host port synchronized. Do not stop another project's container to free a port without its owner's approval.
+
+Open `http://127.0.0.1:8025` to inspect locally captured OTP emails in Mailpit. Its inbox is for development only: messages are not delivered to the recipient's real mailbox.
 
 ## SQLx migrations
 

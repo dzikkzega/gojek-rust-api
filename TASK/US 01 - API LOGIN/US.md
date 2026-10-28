@@ -1,12 +1,12 @@
 # US 01 — API LOGIN
 
 **Project:** GOJEK-rust-api  
-**Status:** In Progress  
+**Status:** Done (local Mailpit; production relay D-05 Open)  
 **Priority:** P0 — MVP
 
 ## User Story
 
-Sebagai pengguna, saya ingin login dengan nomor telepon terverifikasi, agar mengakses API sesuai perannya.
+Sebagai pengguna, saya ingin login dengan email terverifikasi, agar mengakses API sesuai perannya.
 
 ## API scope
 
@@ -17,9 +17,9 @@ Sebagai pengguna, saya ingin login dengan nomor telepon terverifikasi, agar meng
 
 ## Dependencies / keputusan
 
-- Migrasi `auth_otp_challenges` telah diterapkan ke PostgreSQL lokal.
-- Provider OTP SMS/WhatsApp produksi belum dipilih (D-05 Open). `DEV_STATIC_OTP` hanya tersedia untuk pengujian lokal.
-- Access token memakai JWT HMAC-SHA256 (15 menit); refresh token acak disimpan sebagai hash SHA-256 dalam `auth_sessions`.
+- Migrasi forward `20261028000100_email_otp.sql` memindahkan identitas login ke `email_normalized` dan mempertahankan telepon sebagai kontak opsional.
+- SMTP lokal menggunakan Mailpit (`127.0.0.1:1025`, inbox UI `127.0.0.1:8025`); relay produksi dan kebijakan verifikasi email masih D-05 Open.
+- Access token memakai JWT HMAC-SHA256 (15 menit); refresh token acak disimpan sebagai hash SHA-256 dalam `auth_sessions`; replay refresh mencabut seluruh sesi user; maksimal 8 sesi aktif per akun.
 
 ## Acceptance Criteria cards
 

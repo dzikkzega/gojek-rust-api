@@ -50,7 +50,7 @@ Semua resource milik pengguna hanya dapat diakses pemiliknya, peserta perjalanan
 | Produk | API backend ride-hailing motor dan mobil |
 | Bentuk layanan | REST API JSON; WebSocket untuk update langsung perjalanan bila termasuk MVP teknis |
 | Prefix | `/api/v1` |
-| Auth awal | Nomor telepon + OTP; kanal/provider pengiriman OTP masih TBD |
+| Auth awal | Email terverifikasi + OTP; SMTP relay/provider produksi TBD, Mailpit untuk development lokal |
 | Pembayaran awal | Tunai; pembayaran non-tunai ditunda |
 | Status perjalanan | State machine eksplisit, perubahan hanya melalui aksi yang sah |
 | Arsitektur | Modular monolith |
@@ -64,7 +64,7 @@ Semua resource milik pengguna hanya dapat diakses pemiliknya, peserta perjalanan
 
 - Wilayah/kota peluncuran, batas area layanan, mata uang, dan bahasa.
 - Rumus tarif, minimum tarif, pembulatan, biaya pembatalan, dan siapa yang menanggungnya.
-- Provider peta/rute/geocoding dan SMS/WhatsApp OTP.
+- Provider peta/rute/geocoding dan email SMTP relay produksi (local development uses Mailpit).
 - Usia minimum, syarat verifikasi identitas, retensi dokumen, serta kebijakan privasi.
 - SLA, kapasitas puncak, target ketersediaan, dan target latensi numerik.
 - Payment gateway untuk fase non-tunai.
@@ -132,7 +132,7 @@ Semua endpoint JSON menggunakan prefix `/api/v1`, kecuali webhook dan operasiona
 
 | Method | Path | Akses | Prioritas / perilaku |
 |---|---|---|---|
-| `POST` | `/auth/otp/request` | Publik | P0; meminta OTP, rate-limited; respons tidak membocorkan apakah nomor sudah terdaftar |
+| `POST` | `/auth/otp/request` | Publik | P0; meminta OTP email, rate-limited; respons tidak membocorkan apakah akun sudah terdaftar |
 | `POST` | `/auth/otp/verify` | Publik | P0; verifikasi OTP, buat akun penumpang bila belum ada, buat sesi |
 | `POST` | `/auth/token/refresh` | Sesi | P0; rotasi/refresh token dan cabut token lama sesuai desain sesi |
 | `POST` | `/auth/logout` | Login | P0; cabut sesi saat ini |
@@ -264,7 +264,7 @@ Event realtime yang direncanakan: `trip.status_changed`, `trip.driver_assigned`,
 
 Entitas konseptual (nama kolom final ditetapkan dalam skema/migrasi):
 
-- `users`: identitas akun, nomor telepon ternormalisasi, profil, status, timestamps.
+- `users`: identitas akun berbasis email ternormalisasi/terverifikasi, nomor telepon opsional sebagai kontak, profil, status, timestamps.
 - `auth_sessions`: sesi/token yang dapat dicabut, masa berlaku, metadata perangkat minimum.
 - `driver_profiles`: status pendaftaran, status operasional, rating agregat yang dapat dihitung ulang.
 - `driver_documents`: metadata dan status review; berkas tidak disimpan sebagai teks di database/log.
@@ -301,7 +301,7 @@ Alur request: route/ekstraksi/validasi → aturan domain → akses repository/SQ
 ## 12. Keamanan dan privasi
 
 - TLS diwajibkan di deployment; rahasia hanya lewat secret/environment management deployment, bukan repository atau log.
-- OTP harus memiliki masa berlaku, batas percobaan, rate limit per nomor/IP, dan penyimpanan aman; respons request tidak mengungkap keberadaan akun.
+- OTP harus memiliki masa berlaku, batas percobaan, rate limit per email/IP, dan penyimpanan aman; respons request tidak mengungkap keberadaan akun.
 - Token sesi harus dapat dicabut dan tidak pernah ditampilkan kembali di log. Pilihan format token/provider masih ditetapkan saat desain auth teknis.
 - Otorisasi server-side pada setiap resource; jangan percaya `user_id`, role, tarif, status, maupun jumlah pembayaran dari client.
 - Driver hanya dapat mengubah perjalanan yang ditugaskan kepadanya; penumpang hanya dapat membaca perjalanan miliknya.
@@ -339,7 +339,7 @@ Alur request: route/ekstraksi/validasi → aturan domain → akses repository/SQ
 - API test untuk status HTTP, validasi, error schema, auth, dan akses lintas pengguna.
 - Uji konkurensi: dua driver menerima pesanan yang sama; hanya satu berhasil.
 - Uji idempotency: request pemesanan berulang dengan key sama menghasilkan satu perjalanan; key sama dengan payload berbeda menghasilkan konflik.
-- Uji keamanan: enumerasi nomor, brute-force OTP, akses resource ID milik orang lain, input lokasi tidak valid, dan role escalation.
+- Uji keamanan: enumerasi email, brute-force OTP, akses resource ID milik orang lain, input lokasi tidak valid, dan role escalation.
 
 ### MVP diterima jika
 
@@ -360,7 +360,7 @@ Alur request: route/ekstraksi/validasi → aturan domain → akses repository/SQ
 | Dua driver menerima pesanan | Klaim atomik/constraint dan tes konkurensi |
 | Lokasi palsu atau usang | Validasi koordinat/waktu, freshness threshold, monitoring anomali; kebijakan anti-fraud menyusul |
 | Tarif tidak akurat | Quote berversi, masa berlaku, provider rute dan aturan tarif diputuskan sebelum rilis |
-| OTP mahal atau disalahgunakan | Provider dipilih, rate limit, cooldown, limit per nomor/IP, metrik biaya |
+| OTP mahal atau disalahgunakan | Gunakan SMTP + Mailpit untuk lokal; pilih relay produksi, rate limit, cooldown, dan limit per email/IP |
 | Redis hilang | Simpan transaksi di PostgreSQL; data lokasi diminta ulang dari driver |
 | Scope membesar menyerupai super-app | Tolak layanan non-transportasi dari MVP; kembangkan hanya berdasar validasi produk |
 | Data lokasi/dokumen sensitif | Least privilege, retensi terbatas, audit, redaksi log, kebijakan privasi sebelum produksi |

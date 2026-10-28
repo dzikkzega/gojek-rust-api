@@ -11,7 +11,7 @@ Axum + Tokio · PostgreSQL/PostGIS via SQLx · Redis · Serde · Tracing.
 Install Docker Desktop and start its engine. Copy `.env.example` to `.env`, then start PostgreSQL/PostGIS:
 
 ```bash
-docker compose up -d postgres
+docker compose up -d postgres redis mailpit
 docker compose ps
 ```
 
@@ -32,7 +32,7 @@ Stop the container without deleting data with `docker compose stop postgres`. To
 
 Install Rust stable (minimum 1.94 for the selected SQLx version), export variables from `.env` in your shell/development environment, then run `cargo run`.
 
-The API binds to `127.0.0.1:3000` by default. Set `BIND_ADDR` to override. `DATABASE_URL` and `REDIS_URL` are optional for local startup; `/api/v1/ready` checks configured dependencies and returns `503` when either dependency is missing or unavailable. `/api/v1/health` is a liveness check and does not depend on them. Redis is not part of the current Compose setup.
+The API binds to `127.0.0.1:3000` by default. Set `BIND_ADDR` to override. `DATABASE_URL`, `REDIS_URL`, `SMTP_URL`, and `SMTP_FROM` are optional for process startup; `/api/v1/ready` checks configured PostgreSQL and Redis and reports whether SMTP is configured. `/api/v1/health` is a liveness check only. Mailpit captures local development emails at `http://127.0.0.1:8025`; it does not deliver to real mailboxes.
 
 Never commit `.env` or real credentials. `.env.example` contains development-only placeholders.
 
@@ -51,16 +51,18 @@ Review the full table relationships in [`docs/database-relationships.md`](docs/d
 Schema overview:
 
 - `users` → auth sessions, driver applications, rider quotes/trips, ratings, and audit actors.
+- `auth_otp_challenges` → short-lived hashed OTP challenges for email verification.
 - Driver application → documents; approved application → driver profile → vehicles.
 - Service area → versioned fare rules → immutable quote/trip fare snapshots.
 - Rider quote → at most one trip; trip → status events, at most one payment, and participant ratings.
 - Driver positions are ephemeral in Redis, not durable PostgreSQL rows.
 
-The schema is MVP scope; OTP challenges, support, notifications, and non-cash provider payments are intentionally excluded for now.
+The schema is MVP scope; support, notifications, and non-cash provider payments are intentionally excluded for now.
 ## Endpoints
 
 - `GET /api/v1/health` — process liveness.
 - `GET /api/v1/ready` — readiness check for configured PostgreSQL and Redis dependencies.
+- `POST /api/v1/auth/otp/request`, `POST /api/v1/auth/otp/verify`, `POST /api/v1/auth/token/refresh`, `POST /api/v1/auth/logout` — email OTP and session routes.
 
 ## Checks
 

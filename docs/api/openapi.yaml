@@ -895,16 +895,17 @@ components:
         status: {type: string, const: ok}
     ReadinessResponse:
       type: object
-      required: [status, postgres, redis]
+      required: [status, postgres, redis, email]
       properties:
         status: {type: string, enum: [ready, not_ready]}
         postgres: {type: string, enum: [ok, unavailable, not_configured]}
         redis: {type: string, enum: [ok, unavailable, not_configured]}
+        email: {type: string, enum: [configured, not_configured]}
     OtpRequest:
       type: object
-      required: [phone_number]
+      required: [email]
       properties:
-        phone_number: {type: string, description: "E.164 normalized phone number; example +6281234567890"}
+        email: {type: string, format: email, maxLength: 254, example: rider@example.test}
     OtpRequestAccepted:
       type: object
       required: [status]
@@ -913,9 +914,9 @@ components:
         expires_in_seconds: {type: integer, description: TODO configure OTP TTL}
     OtpVerifyRequest:
       type: object
-      required: [phone_number, code]
+      required: [email, code]
       properties:
-        phone_number: {type: string, example: '+6281234567890'}
+        email: {type: string, format: email, maxLength: 254, example: rider@example.test}
         code: {type: string, minLength: 1, maxLength: 32, writeOnly: true}
         device_label: {type: string, maxLength: 120}
     RefreshRequest:
@@ -934,12 +935,11 @@ components:
         user: {$ref: '#/components/schemas/UserProfile'}
     UserProfile:
       type: object
-      required: [id, phone_number, display_name, role, status, created_at]
+      required: [id, email, display_name, role, status, created_at]
       properties:
         id: {type: string, format: uuid}
-        phone_number: {type: string}
+        email: {type: string, format: email, maxLength: 254}
         display_name: {type: string, maxLength: 120}
-        email: {type: [string, 'null'], format: email}
         role: {type: string, enum: [rider, driver, admin, support]}
         status: {type: string, enum: [active, suspended, deleted]}
         created_at: {type: string, format: date-time}
@@ -949,7 +949,6 @@ components:
       additionalProperties: false
       properties:
         display_name: {type: string, minLength: 1, maxLength: 120}
-        email: {type: [string, 'null'], format: email, maxLength: 254}
     DriverApplicationCreate:
       type: object
       additionalProperties: false

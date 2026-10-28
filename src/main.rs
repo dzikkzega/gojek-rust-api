@@ -1,15 +1,16 @@
 use std::{env, net::SocketAddr, time::Duration};
 
 use axum::{
+    Json, Router,
     extract::State,
     http::StatusCode,
     response::{IntoResponse, Response},
     routing::get,
-    Json, Router,
 };
+use lettre::{AsyncSmtpTransport, Tokio1Executor, message::Mailbox};
 use redis::aio::ConnectionManager;
 use serde::Serialize;
-use sqlx::{postgres::PgPoolOptions, PgPool};
+use sqlx::{PgPool, postgres::PgPoolOptions};
 use tokio::net::TcpListener;
 use tracing::{error, info};
 use tracing_subscriber::EnvFilter;
@@ -21,6 +22,8 @@ pub struct AppState {
     pub db: Option<PgPool>,
     pub redis: Option<ConnectionManager>,
     pub jwt_secret: String,
+    pub mailer: Option<AsyncSmtpTransport<Tokio1Executor>>,
+    pub smtp_from: Option<Mailbox>,
 }
 
 #[derive(Serialize)]
@@ -33,6 +36,7 @@ struct ReadinessResponse {
     status: &'static str,
     postgres: &'static str,
     redis: &'static str,
+    email: &'static str,
 }
 
 #[derive(Serialize)]
@@ -101,13 +105,42 @@ async fn connect_dependencies() -> Result<AppState, Box<dyn std::error::Error>> 
         Err(error) => return Err(error.into()),
     };
 
-    let jwt_secret = env::var("JWT_SECRET")
-        .map_err(|_| "JWT_SECRET must be configured")?;
+    let jwt_secret = env::var("JWT_SECRET").map_err(|_| "JWT_SECRET must be configured")?;
     if jwt_secret.len() < 32 {
         return Err("JWT_SECRET must contain at least 32 bytes".into());
     }
 
-    Ok(AppState { db, redis, jwt_secret })
+    let (mailer, smtp_from) = match (env::var("SMTP_URL"), env::var("SMTP_FROM")) {
+        (Ok(url), Ok(from)) => {
+            if !is_permitted_smtp_url(&url) {
+                return Err("non-local SMTP_URL must use smtps:// or tls=required".into());
+            }
+            let transport = AsyncSmtpTransport::<Tokio1Executor>::from_url(&url)?
+                .timeout(Some(Duration::from_secs(10)))
+                .build();
+            let sender: Mailbox = from.parse()?;
+            (Some(transport), Some(sender))
+        }
+        (Err(env::VarError::NotPresent), Err(env::VarError::NotPresent)) => (None, None),
+        _ => return Err("SMTP_URL and SMTP_FROM must be set together".into()),
+    };
+
+    Ok(AppState {
+        db,
+        redis,
+        jwt_secret,
+        mailer,
+        smtp_from,
+    })
+}
+
+fn is_permitted_smtp_url(url: &str) -> bool {
+    if url.starts_with("smtps://") || url.contains("tls=required") {
+        return true;
+    }
+    url.starts_with("smtp://127.0.0.1:")
+        || url.starts_with("smtp://localhost:")
+        || url.starts_with("smtp://[::1]:")
 }
 
 async fn health() -> Json<HealthResponse> {
@@ -136,10 +169,16 @@ async fn ready(State(state): State<AppState>) -> Response {
     };
 
     let is_ready = postgres == "ok" && redis == "ok";
+    let email = if state.mailer.is_some() && state.smtp_from.is_some() {
+        "configured"
+    } else {
+        "not_configured"
+    };
     let body = ReadinessResponse {
         status: if is_ready { "ready" } else { "not_ready" },
         postgres,
         redis,
+        email,
     };
 
     if is_ready {
@@ -173,6 +212,8 @@ mod tests {
             db: None,
             redis: None,
             jwt_secret: "x".repeat(32),
+            mailer: None,
+            smtp_from: None,
         }))
         .await;
 
